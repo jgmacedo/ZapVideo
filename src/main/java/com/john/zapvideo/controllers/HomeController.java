@@ -77,6 +77,8 @@ public class HomeController {
         } catch (IOException e) {
             throw new RuntimeException("Erro ao ler o arquivo", e);
         }
+        String videoId = extractVideoIdFromFilePath(filePath);
+        VideoService.deleteVideoById(videoId); // Call the service to delete the video after download
     }
 
 
@@ -101,4 +103,14 @@ public class HomeController {
         // Redireciona para a URL de download com o caminho do arquivo codificado
         return "redirect:/download?filePath=" + encodedFilePath;
     }
+    private String extractVideoIdFromFilePath(String filePath) {
+        File file = new File(filePath);
+        File parentDir = file.getParentFile();
+
+        if (parentDir != null) {
+            return parentDir.getName();
+        }
+        return null; // In case the parent directory is null (shouldn't happen with your current setup)
+    }
+
 }

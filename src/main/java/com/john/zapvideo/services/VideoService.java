@@ -212,4 +212,23 @@ public class VideoService {
     public static String getFilePathById(String id) {
         return videoPaths.get(id); // Return the file path associated with the ID
     }
+
+    public static void deleteVideoById(String videoId) {
+        String filePath = videoPaths.get(videoId);
+        if (filePath != null) {
+            File videoFile = new File(filePath);
+            if (videoFile.exists()) {
+                if (videoFile.delete()) {
+                    System.out.println("Successfully deleted video: " + filePath);
+                } else {
+                    System.err.println("Failed to delete video: " + filePath);
+                }
+            } else {
+                System.err.println("Video file not found: " + filePath);
+            }
+        } else {
+            System.err.println("No video found with ID: " + videoId);
+        }
+    }
+
 }

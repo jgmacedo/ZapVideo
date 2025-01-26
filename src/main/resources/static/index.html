@@ -4,13 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZapVídeo - Download de Vídeos</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>ZapVídeo</h1>
-<form action="/process" method="post">
-    <label for="url">URL do Vídeo:</label>
-    <input type="text" id="url" name="url" placeholder="https://www.youtube.com/watch?v=EXEMPLO" required>
-    <button type="submit">Processar</button>
-</form>
+<header>
+    <h1>ZapVídeo</h1>
+</header>
+<main>
+    <div class="container">
+        <form action="/process" method="post">
+            <div class="form-group">
+                <label for="url">URL do Vídeo:</label>
+                <input type="text" id="url" name="url" placeholder="https://www.youtube.com/watch?v=EXEMPLO" required>
+            </div>
+            <button type="submit">Processar</button>
+        </form>
+    </div>
+</main>
+<footer>
+    <p>&copy; 2025 ZapVídeo. Todos os direitos reservados.</p>
+</footer>
 </body>
 </html>

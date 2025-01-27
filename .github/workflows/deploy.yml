@@ -31,4 +31,4 @@ jobs:
           script: |
             export JAVA_HOME=/root/.sdkman/candidates/java/current
             export PATH=$JAVA_HOME/bin:$PATH
-            java -jar /opt/java/zapvideo-0.0.1-SNAPSHOT.jar
+            java -jar -Dserver.port=8080 /opt/java/zapvideo-0.0.1-SNAPSHOT.jar

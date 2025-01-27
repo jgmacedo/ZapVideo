@@ -29,4 +29,6 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            export JAVA_HOME=/root/.sdkman/candidates/java/current
+            export PATH=$JAVA_HOME/bin:$PATH
             java -jar /opt/java/zapvideo-0.0.1-SNAPSHOT.jar

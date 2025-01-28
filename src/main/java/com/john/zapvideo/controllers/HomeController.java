@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -22,13 +23,13 @@ import java.nio.file.Paths;
 @RequestMapping("/")
 public class HomeController {
 
+    private static final String BASE_DIR = "/root/downloads";
+
     // Verifica se o caminho do arquivo é válido
     private boolean isValidFilePath(String filePath) {
         File file = new File(filePath);
         String absolutePath = file.getAbsolutePath();
-        String baseDir = "/path/to/your/uploads";  // Defina o diretório base para os vídeos
-
-        return absolutePath.startsWith(baseDir);
+        return absolutePath.startsWith(BASE_DIR);
     }
 
     // Envia a requisição de download/processamento do vídeo
@@ -52,6 +53,10 @@ public class HomeController {
     // Serve o arquivo para download
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadFile(@RequestParam String filePath) {
+        if (!isValidFilePath(filePath)) {
+            throw new RuntimeException("Invalid file path");
+        }
+
         Path path = Paths.get(filePath);
         Resource resource;
         try {
@@ -110,6 +115,15 @@ public class HomeController {
         return "redirect:/download.html?filePath=" + encodedFilePath + "&id=" + id; // Redirect to the static HTML page with the filePath and video ID
     }
 
+    @DeleteMapping("/deleteVideo")
+    public ResponseEntity<String> deleteVideo(@RequestParam String videoId) {
+        try {
+            VideoService.deleteVideoById(videoId);
+            return ResponseEntity.ok("Video deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete video: " + e.getMessage());
+        }
+    }
     private String extractVideoIdFromFilePath(String filePath) {
         File file = new File(filePath);
         File parentDir = file.getParentFile();

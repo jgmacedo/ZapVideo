@@ -18,6 +18,7 @@
     // Set the download link
     if (filePath && videoId) {
         document.getElementById('downloadLink').href = '/download?filePath=' + filePath + '&id=' + videoId;
+
     } else {
         document.body.innerHTML = '<h1>Error: Video not found</h1>';
     }

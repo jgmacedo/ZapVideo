@@ -31,4 +31,4 @@ jobs:
           script: |
             export JAVA_HOME=/root/.sdkman/candidates/java/current
             export PATH=$JAVA_HOME/bin:$PATH
-            java -jar -Dserver.port=8080 /opt/java/zapvideo-0.0.1-SNAPSHOT.jar
+            nohup java -jar -Dserver.port=8080 /opt/java/zapvideo-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &

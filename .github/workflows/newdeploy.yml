@@ -1,0 +1,36 @@
+name: Deploy Spring Boot
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: |
+            # Parar a aplicação atual (se estiver rodando)
+            pkill -f 'java -jar' || echo "Nenhuma aplicação em execução"
+            
+            # Navegar para o diretório da aplicação
+            cd /opt/zap-video
+            
+            # Atualizar o código da aplicação
+            git pull origin main
+            
+            # Compilar o projeto usando Gradle
+            ./gradlew clean build -x test
+            
+            # Executar a aplicação com o JAR gerado
+            nohup java -jar build/libs/zapvideo-0.0.1-SNAPSHOT.jar --server.port=8080 > app.log 2>&1 &

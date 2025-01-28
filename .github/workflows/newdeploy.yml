@@ -24,10 +24,10 @@ jobs:
             pkill -f 'java -jar' || echo "Nenhuma aplicação em execução"
             
             # Navegar para o diretório da aplicação
-            cd /opt/zap-video
+            sudo cd /opt/zap-video
             
             # Atualizar o código da aplicação
-            git pull origin main
+            sudo git pull origin main
             
             # Compilar o projeto usando Gradle
             ./gradlew clean build -x test

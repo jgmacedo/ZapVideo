@@ -10,9 +10,19 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 
+
 @Controller
 @RequestMapping("/")
 public class HomeController {
+
+    // Verifica se o caminho do arquivo é válido
+    private boolean isValidFilePath(String filePath) {
+        File file = new File(filePath);
+        String absolutePath = file.getAbsolutePath();
+        String baseDir = "/path/to/your/uploads";  // Defina o diretório base para os vídeos
+
+        return absolutePath.startsWith(baseDir);
+    }
 
     // Envia a requisição de download/processamento do vídeo
     @PostMapping("/process")
@@ -20,50 +30,48 @@ public class HomeController {
         String id = null;
         String filePath = null;
         try {
-            // Process the video and get its ID
+            // Processa o vídeo e obtém o ID
             id = VideoService.processVideo(url);
-            // Get the file path using the ID
+            // Obtém o caminho do arquivo usando o ID
             filePath = VideoService.getFilePathById(id);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        // If the file path exists, redirect to the download page
+        // Se o caminho do arquivo existir, redireciona para a página de download
         if (filePath != null) {
-            // URL-encode the file path for safe use in URL
             String encodedFilePath = null;
             try {
                 encodedFilePath = URLEncoder.encode(filePath, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException(e);
             }
-            // Redirect to the /download endpoint with the encoded file path
             return "redirect:/download?filePath=" + encodedFilePath;
         } else {
             model.addAttribute("error", "Video processing failed");
-            return "error"; // Show an error page if processing fails
+            return "error"; // Exibe uma página de erro caso o processamento falhe
         }
     }
-
 
     // Serve o arquivo para download
     @GetMapping("/download")
     @ResponseBody
     public void downloadFile(@RequestParam String filePath, HttpServletResponse response) throws IOException {
-        // Cria o objeto File com o caminho fornecido
-        File file = new File(filePath);
+        if (!isValidFilePath(filePath)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
 
+        File file = new File(filePath);
         if (!file.exists()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        // Define os headers da resposta para o download do arquivo
         response.setContentType(Files.probeContentType(file.toPath()));
         response.setHeader("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
         response.setContentLengthLong(file.length());
 
-        // Stream o conteúdo do arquivo para a resposta
         try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
              BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream())) {
 
@@ -77,10 +85,10 @@ public class HomeController {
         } catch (IOException e) {
             throw new RuntimeException("Erro ao ler o arquivo", e);
         }
-        String videoId = extractVideoIdFromFilePath(filePath);
-        VideoService.deleteVideoById(videoId); // Call the service to delete the video after download
-    }
 
+        String videoId = extractVideoIdFromFilePath(filePath);
+        VideoService.deleteVideoById(videoId); // Deleta o vídeo após o download
+    }
 
     // Redireciona para a página de download
     @GetMapping("/redirect")
@@ -92,7 +100,6 @@ public class HomeController {
             return "error"; // Exibe uma página de erro caso o vídeo não seja encontrado
         }
 
-        // Codifica o caminho do arquivo para a URL
         String encodedFilePath = null;
         try {
             encodedFilePath = URLEncoder.encode(filePath, "UTF-8");
@@ -100,9 +107,9 @@ public class HomeController {
             throw new RuntimeException(e);
         }
 
-        // Redireciona para a URL de download com o caminho do arquivo codificado
         return "redirect:/download?filePath=" + encodedFilePath;
     }
+
     private String extractVideoIdFromFilePath(String filePath) {
         File file = new File(filePath);
         File parentDir = file.getParentFile();
@@ -110,7 +117,6 @@ public class HomeController {
         if (parentDir != null) {
             return parentDir.getName();
         }
-        return null; // In case the parent directory is null (shouldn't happen with your current setup)
+        return null;
     }
-
 }

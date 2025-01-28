@@ -3,11 +3,14 @@ package com.john.zapvideo.services;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.*;
 
 public class VideoService {
 
     private static final String DOWNLOAD_DIR = "downloads"; // Base directory for storing videos
     private static final Map<String, String> videoPaths = new ConcurrentHashMap<>(); // Map to store video paths by ID
+    private static final int MAX_THREADS = 4; // Maximum number of threads for processing videos
+    private static final int DOWNLOAD_TIMEOUT_MINUTES = 5; // Timeout for download in minutes
 
     /**
      * Processes multiple video downloads asynchronously.
@@ -16,9 +19,11 @@ public class VideoService {
      * @return A list of paths to the downloaded videos.
      */
     public static List<String> processMultipleVideos(List<String> urls) {
+        ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREADS);
         List<CompletableFuture<String>> futures = new ArrayList<>();
+
         for (String url : urls) {
-            CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> processVideo(url));
+            CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> processVideo(url), executorService);
             futures.add(future);
         }
 
@@ -31,7 +36,7 @@ public class VideoService {
                 downloadedVideos.add("Error: " + e.getMessage());
             }
         }
-
+        executorService.shutdown();
         return downloadedVideos;
     }
 
@@ -39,7 +44,7 @@ public class VideoService {
      * Processes a video download from the given URL.
      *
      * @param url The URL of the video to download.
-     * @return The absolute path of the downloaded video.
+     * @return The unique ID of the downloaded video.
      */
     public static String processVideo(String url) {
         validateUrl(url);
@@ -62,6 +67,11 @@ public class VideoService {
         if (url == null || url.isEmpty() || !url.startsWith("http")) {
             throw new IllegalArgumentException("Invalid URL: " + url);
         }
+
+        // Verificar se a URL contém o domínio de vídeos
+        if (!url.contains("youtube") && !url.contains("vimeo")) {
+            throw new IllegalArgumentException("URL não é suportada: " + url);
+        }
     }
 
     /**
@@ -73,6 +83,9 @@ public class VideoService {
         File baseDir = new File(DOWNLOAD_DIR);
         if (!baseDir.exists() && !baseDir.mkdirs()) {
             throw new RuntimeException("Failed to create base directory: " + baseDir.getAbsolutePath());
+        }
+        if (!baseDir.isDirectory()) {
+            throw new RuntimeException("Expected a directory but found: " + baseDir.getAbsolutePath());
         }
         System.out.println("Base directory initialized: " + baseDir.getAbsolutePath());
         return baseDir;
@@ -115,14 +128,14 @@ public class VideoService {
      *
      * @param processBuilder The ProcessBuilder for the download process.
      * @param uniqueDir      The directory where the video is stored.
-     * @return The absolute path of the downloaded video.
+     * @return The unique ID for the downloaded video.
      */
     private static String executeDownload(ProcessBuilder processBuilder, File uniqueDir) {
         try {
             Process process = processBuilder.start();
             consumeStream(process);
 
-            if (!process.waitFor(2, TimeUnit.MINUTES)) {
+            if (!process.waitFor(DOWNLOAD_TIMEOUT_MINUTES, TimeUnit.MINUTES)) {
                 process.destroyForcibly();
                 throw new TimeoutException("Download process timed out.");
             }
@@ -155,23 +168,27 @@ public class VideoService {
     private static String findDownloadedFile(File uniqueDir) throws IOException {
         // List files that match common video formats
         File[] files = uniqueDir.listFiles((dir, name) -> name.endsWith(".mp4") || name.endsWith(".mkv") || name.endsWith(".webm"));
-        if (files != null && files.length == 1) {
-            File videoFile = files[0];
-            String newFileName = videoFile.getName().replace(" ", "_"); // Replace spaces with underscores
 
-            // Rename the file if the name has changed
-            if (!newFileName.equals(videoFile.getName())) {
-                File renamedFile = new File(videoFile.getParent(), newFileName);
-                if (!videoFile.renameTo(renamedFile)) {
-                    throw new IOException("Failed to rename the file.");
-                }
-                videoFile = renamedFile;
-            }
-
-            return videoFile.getAbsolutePath(); // Return the renamed file path
-        } else {
-            throw new IOException("Error: No video file found or multiple files detected.");
+        if (files == null || files.length == 0) {
+            throw new IOException("No video files found.");
         }
+
+        if (files.length > 1) {
+            System.out.println("Warning: Multiple video files found, selecting the first one.");
+        }
+
+        File videoFile = files[0]; // Escolher o primeiro arquivo encontrado
+
+        String newFileName = videoFile.getName().replace(" ", "_"); // Renomear para evitar espaços
+        if (!newFileName.equals(videoFile.getName())) {
+            File renamedFile = new File(videoFile.getParent(), newFileName);
+            if (!videoFile.renameTo(renamedFile)) {
+                throw new IOException("Failed to rename the file.");
+            }
+            videoFile = renamedFile;
+        }
+
+        return videoFile.getAbsolutePath(); // Retorna o caminho do arquivo renomeado
     }
 
     /**
@@ -213,6 +230,11 @@ public class VideoService {
         return videoPaths.get(id); // Return the file path associated with the ID
     }
 
+    /**
+     * Deletes a video file by its unique ID.
+     *
+     * @param videoId The unique ID of the video to delete.
+     */
     public static void deleteVideoById(String videoId) {
         String filePath = videoPaths.get(videoId);
         if (filePath != null) {
@@ -230,5 +252,4 @@ public class VideoService {
             System.err.println("No video found with ID: " + videoId);
         }
     }
-
 }

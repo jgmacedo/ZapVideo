@@ -12,15 +12,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '23.0.2'
-          distribution: 'oracle'
+#      - name: Set up JDK
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '23.0.2'
+#          distribution: 'oracle'
 
       - name: Build with Gradle
         run: |
           ./gradlew clean build
+
+      - name: Copy JAR to /opt/java
+        run: |
+          scp build/libs/zapvideo-0.0.1-SNAPSHOT.jar ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:/opt/java/zapvideo-0.0.1-SNAPSHOT.jar
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master

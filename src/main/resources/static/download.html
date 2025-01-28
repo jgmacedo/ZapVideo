@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download Video</title>
+</head>
+<body>
+<h1>Download Your Video</h1>
+<p>Your video is ready for download:</p>
+<a id="downloadLink" href="#">Download Video</a>
+
+<script>
+    // Get the filePath and video ID from the URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const filePath = urlParams.get('filePath');
+    const videoId = urlParams.get('id');
+
+    // Set the download link
+    if (filePath && videoId) {
+        document.getElementById('downloadLink').href = '/download?filePath=' + filePath + '&id=' + videoId;
+    } else {
+        document.body.innerHTML = '<h1>Error: Video not found</h1>';
+    }
+</script>
+</body>
+</html>

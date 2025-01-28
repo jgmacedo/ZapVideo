@@ -24,7 +24,7 @@ jobs:
 
       - name: Copy JAR to /opt/java
         run: |
-          scp build/libs/zapvideo-0.0.1-SNAPSHOT.jar ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:/opt/java/zapvideo-0.0.1-SNAPSHOT.jar
+          sudo scp -i ${{ secrets.KEY }} build/libs/zapvideo-0.0.1-SNAPSHOT.jar ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:/opt/java/zapvideo-0.0.1-SNAPSHOT.jar
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master

@@ -20,10 +20,10 @@ jobs:
           password: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           script: |
-            echo "Deploying to VPS"
 #            pkill -f 'java -jar' || echo "Nenhuma aplicação em execução"
             
-#            cd /opt/ZapVideo
+            cd /opt/ZapVideo
+            pwd
             
 #            git pull origin main
             

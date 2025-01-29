@@ -23,6 +23,7 @@ jobs:
 #            pkill -f 'java -jar' || echo "Nenhuma aplicação em execução"
             
             cd /opt/ZapVideo
+                    
             pwd
             
 #            git pull origin main

@@ -21,8 +21,12 @@ jobs:
           port: 22
           script: |
             # pkill -f 'java -jar' || echo "Nenhuma aplicação em execução"
+            echo 'export JAVA_HOME=/root/.sdkman/candidates/java/current' >> ~/.bashrc
+            echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ~/.bashrc
+            source ~/.bashrc
             cd /opt/ZapVideo
             pwd
             git pull origin main
             ./gradlew clean build
+            
             # nohup java -jar build/libs/zapvideo-0.0.1-SNAPSHOT.jar --server.port=8080 > app.log 2>&1 &

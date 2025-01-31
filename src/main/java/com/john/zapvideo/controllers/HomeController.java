@@ -74,25 +74,6 @@ public class HomeController {
                 .body(resource);
     }
 
-    // Redireciona para a página de download
-    @GetMapping("/redirect")
-    public String redirectToDownloadPage(@RequestParam String id, Model model) {
-        String filePath = VideoService.getFilePathById(id);
-
-        if (filePath == null) {
-            model.addAttribute("error", "Vídeo não encontrado");
-            return "error"; // Exibe uma página de erro caso o vídeo não seja encontrado
-        }
-
-        String encodedFilePath = null;
-        try {
-            encodedFilePath = URLEncoder.encode(filePath, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-
-        return "redirect:/download?filePath=" + encodedFilePath;
-    }
 
     @GetMapping("/downloadPage")
     public String downloadPage(@RequestParam String id, Model model) {

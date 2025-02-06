@@ -1,4 +1,3 @@
-```markdown
 # ZapVideo
 
 ## Project Overview
@@ -7,7 +6,7 @@ ZapVideo is a tool designed to download videos for sharing via WhatsApp, utilizi
 ## Getting Started
 
 ### Prerequisites
-- Java 17
+- Java 23
 - Gradle
 - Git
 
@@ -29,11 +28,11 @@ To run the application locally:
 ./gradlew bootRun
 ```
 
-### Deployment
-The application can be deployed using GitHub Actions. The deployment script is located in `.github/workflows/newdeploy.yml`.
+Deployment
+The application is deployed automatically using GitHub Actions. The deployment script is located in `.github/workflows/newdeploy.yml`.
 
-### Usage
-Once the application is running, you can access it at `http://localhost:8080`.
+Usage
+Once the application is running, you can access it at `www.zapvideo.site`.
 
 ### API Documentation
 #### Endpoints

@@ -20,11 +20,11 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           script: |
-            # export JAVA_HOME=/root/.sdkman/candidates/java/current
-            # export PATH=$JAVA_HOME/bin:$PATH
+            export JAVA_HOME=/root/.sdkman/candidates/java/current
+            export PATH=$JAVA_HOME/bin:$PATH
 
-            # echo "JAVA_HOME is set to $JAVA_HOME"
-            # java -version
+            echo "JAVA_HOME is set to $JAVA_HOME"
+            java -version
 
             fuser -k 8080/tcp
             cd /opt/ZapVideo

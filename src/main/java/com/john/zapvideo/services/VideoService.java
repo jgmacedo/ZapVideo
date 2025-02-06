@@ -116,10 +116,12 @@ public class VideoService {
     private static ProcessBuilder buildProcess(String url, File uniqueDir) {
         return new ProcessBuilder(
                 "yt-dlp", // Replace with the absolute path if necessary
+                "--cookies", "/caminho/para/seu/cookies.txt", // Adicione esta linha
                 "-f", "mp4",
                 "-o", uniqueDir.getAbsolutePath() + File.separator + "%(title)s.%(ext)s",
                 url
         );
+
     }
 
     /**

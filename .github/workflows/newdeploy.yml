@@ -21,15 +21,16 @@ jobs:
           port: 22
 
           script: |
-            export JAVA_HOME=/root/.sdkman/candidates/java/current
-            export PATH=$JAVA_HOME/bin:$PATH
+#            export JAVA_HOME=/root/.sdkman/candidates/java/current
+#            export PATH=$JAVA_HOME/bin:$PATH
 
-            echo "JAVA_HOME is set to $JAVA_HOME"
-            java -version
+#            echo "JAVA_HOME is set to $JAVA_HOME"
+#            java -version
 
-            pkill -f 'java -jar' || echo "Nenhuma aplicação em execução"
+            fuser -k 8080/tcp
             cd /opt/ZapVideo
             pwd
             git pull origin main
             ./gradlew clean build
-            nohup java -jar build/libs/zapvideo-0.0.1-SNAPSHOT.jar --server.port=8080 > app.log 2>&1 &
+            java -jar /root/opt/build/libs/zapvideo-0.0.1-SNAPSHOT.jar --server.port=8080
+

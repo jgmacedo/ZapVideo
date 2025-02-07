@@ -30,6 +30,6 @@ jobs:
             cd /opt/ZapVideo
             pwd
             git pull origin main
-            ./gradlew clean build
+            ./gradlew build
             nohup java -jar /opt/ZapVideo/build/libs/zapvideo-0.0.1-SNAPSHOT.jar --server.port=8080 > app.log 2>&1 &
 

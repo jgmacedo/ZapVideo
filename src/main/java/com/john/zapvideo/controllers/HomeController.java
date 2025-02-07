@@ -2,6 +2,7 @@ package com.john.zapvideo.controllers;
 
 import com.john.zapvideo.services.VideoService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
@@ -52,26 +54,30 @@ public class HomeController {
 
     // Serve o arquivo para download
     @GetMapping("/download")
-    public ResponseEntity<Resource> downloadFile(@RequestParam String filePath) {
-        if (!isValidFilePath(filePath)) {
-            throw new RuntimeException("Invalid file path");
-        }
-
-        Path path = Paths.get(filePath);
-        Resource resource;
+    public ResponseEntity<Resource> downloadFile(@RequestParam("id") String videoId) {
         try {
-            resource = new UrlResource(path.toUri());
-            if (!resource.exists() || !resource.isReadable()) {
-                throw new RuntimeException("File not found or not readable");
+            String filePath = VideoService.getFilePathById(videoId);
+            File file = new File(filePath);
+            if (!file.exists()) {
+                throw new FileNotFoundException("File not found");
             }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Error in file path", e);
-        }
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + path.getFileName().toString() + "\"")
-                .body(resource);
+            Resource resource = new FileSystemResource(file);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"");
+
+            return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+        } catch (FileNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private String getFileExtension(Path path) {
+        String fileName = path.getFileName().toString();
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
     }
 
 
@@ -93,7 +99,7 @@ public class HomeController {
         System.out.println(encodedFilePath);
         System.out.println(id);
 
-        return "redirect:/download.html?filePath=" + encodedFilePath + "&id=" + id; // Redirect to the static HTML page with the filePath and video ID
+        return "redirect:/download.html?id=" + id; // Redirect to the static HTML page with the filePath and video ID
     }
 
     @DeleteMapping("/deleteVideo")
@@ -104,14 +110,5 @@ public class HomeController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete video: " + e.getMessage());
         }
-    }
-    private String extractVideoIdFromFilePath(String filePath) {
-        File file = new File(filePath);
-        File parentDir = file.getParentFile();
-
-        if (parentDir != null) {
-            return parentDir.getName();
-        }
-        return null;
     }
 }
